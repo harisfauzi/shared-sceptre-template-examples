@@ -1,0 +1,93 @@
+template_path: ec2/subnet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  subnets:
+    - name: PublicA
+      cidr_block: {{ var.subnet_cidr_block.network_hub.public_a }}
+      ipv6_cidr_block:
+        cidr: !stack_output networkhub/ec2/vpc.yaml::mainvpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 0
+      availability_zone: {{ stack_group_config.region }}a
+      tags:
+        Name: Public-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      network_acl_id: !stack_output networkhub/ec2/networkacl.yaml::publicnacl
+      route_table_id: !stack_output networkhub/ec2/route.yaml::Public
+    - name: PublicB
+      cidr_block: {{ var.subnet_cidr_block.network_hub.public_b }}
+      ipv6_cidr_block:
+        cidr: !stack_output networkhub/ec2/vpc.yaml::mainvpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 1
+      availability_zone: {{ stack_group_config.region }}b
+      tags:
+        Name: Public-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      network_acl_id: !stack_output networkhub/ec2/networkacl.yaml::publicnacl
+      route_table_id: !stack_output networkhub/ec2/route.yaml::Public
+    - name: PrivateA
+      cidr_block: {{ var.subnet_cidr_block.network_hub.private_a }}
+      ipv6_cidr_block:
+        cidr: !stack_output networkhub/ec2/vpc.yaml::mainvpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 2
+      availability_zone: {{ stack_group_config.region }}a
+      tags:
+        Name: Private-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      network_acl_id: !stack_output networkhub/ec2/networkacl.yaml::privatenacl
+      route_table_id: !stack_output networkhub/ec2/route.yaml::PrivateA
+    - name: PrivateB
+      cidr_block: {{ var.subnet_cidr_block.network_hub.private_b }}
+      ipv6_cidr_block:
+        cidr: !stack_output networkhub/ec2/vpc.yaml::mainvpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 3
+      availability_zone: {{ stack_group_config.region }}b
+      tags:
+        Name: Private-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      network_acl_id: !stack_output networkhub/ec2/networkacl.yaml::privatenacl
+      route_table_id: !stack_output networkhub/ec2/route.yaml::PrivateB
+    - name: PrivateLinkA
+      cidr_block: {{ var.subnet_cidr_block.network_hub.transit_a }}
+      ipv6_cidr_block:
+        cidr: !stack_output networkhub/ec2/vpc.yaml::mainvpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 4
+      availability_zone: {{ stack_group_config.region }}a
+      tags:
+        Name: PrivateLink-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      network_acl_id: !stack_output networkhub/ec2/networkacl.yaml::PrivateLinkNACL
+      route_table_id: !stack_output networkhub/ec2/route.yaml::PrivateLinkA
+    - name: PrivateLinkB
+      cidr_block: {{ var.subnet_cidr_block.network_hub.transit_b }}
+      ipv6_cidr_block:
+        cidr: !stack_output networkhub/ec2/vpc.yaml::mainvpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 5
+      availability_zone: {{ stack_group_config.region }}b
+      tags:
+        Name: PrivateLink-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      network_acl_id: !stack_output networkhub/ec2/networkacl.yaml::PrivateLinkNACL
+      route_table_id: !stack_output networkhub/ec2/route.yaml::PrivateLinkB
+
+stack_tags:
+  Name: networkhub-subnet

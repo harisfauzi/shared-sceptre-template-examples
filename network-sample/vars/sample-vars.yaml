@@ -1,0 +1,62 @@
+vpc_name: sceptre-sample-vpc
+
+subnet_cidr_block:
+  network_hub:
+    vpc: 10.160.0.0/20
+    public_a: 10.160.4.0/24
+    public_b: 10.160.5.0/24
+    public_summary: 10.160.4.0/23
+    private_a: 10.160.0.0/23
+    private_b: 10.160.2.0/23
+    private_summary: 10.160.0.0/22
+    transit_a: 10.160.6.0/28
+    transit_b: 10.160.6.16/28
+    transit_summary: 10.160.6.0/27
+  development:
+    vpc: 10.164.0.0/20
+    public_a: 10.164.8.0/24
+    public_b: 10.164.9.0/24
+    public_summary: 10.164.8.0/23
+    private_a: 10.164.0.0/22
+    private_b: 10.164.4.0/22
+    private_summary: 10.164.0.0/21
+    connectivity_a: 10.164.12.0/25
+    connectivity_b: 10.164.12.128/25
+    connectivity_summary: 10.164.12.0/24
+    isolated_a: 10.164.10.0/24
+    isolated_b: 10.164.11.0/24
+    isolated_summary: 10.164.10.0/23
+  uat:
+    vpc: 10.168.0.0/20
+    public_a: 10.168.8.0/24
+    public_b: 10.168.9.0/24
+    public_summary: 10.168.8.0/23
+    private_a: 10.168.0.0/22
+    private_b: 10.168.4.0/22
+    private_summary: 10.168.0.0/21
+    connectivity_a: 10.168.12.0/25
+    connectivity_b: 10.168.12.128/25
+    connectivity_summary: 10.168.12.0/24
+    isolated_a: 10.168.10.0/24
+    isolated_b: 10.168.11.0/24
+    isolated_summary: 10.168.10.0/23
+  production:
+    vpc: 10.172.0.0/20
+    public_a: 10.172.8.0/24
+    public_b: 10.172.9.0/24
+    public_summary: 10.172.8.0/23
+    private_a: 10.172.0.0/22
+    private_b: 10.172.4.0/22
+    private_summary: 10.172.0.0/21
+    connectivity_a: 10.172.12.0/25
+    connectivity_b: 10.172.12.128/25
+    connectivity_summary: 10.172.12.0/24
+    isolated_a: 10.172.10.0/24
+    isolated_b: 10.172.11.0/24
+    isolated_summary: 10.172.10.0/23
+  office:
+    hq: 172.20.0.0/18
+    branch_01: 172.20.4.0/18
+    branch_02: 172.20.8.0/18
+
+network_range: 10.160.0.0/11
