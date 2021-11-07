@@ -1,0 +1,38 @@
+template_path: ec2/route_table.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  route_tables:
+    - name: Public
+      tags:
+        Name: RTPublic
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+      route_entries:
+        - name: DefaultIPv4
+          destination_cidr_block: 0.0.0.0/0
+          gateway_id: !stack_output networkhub/ec2/internetgateway.yaml::mainvpc
+    - name: PrivateA
+      tags:
+        Name: RTPrivate-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+    - name: PrivateB
+      tags:
+        Name: RTPrivate-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+    - name: PrivateLinkA
+      tags:
+        Name: RTPrivateLink-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+    - name: PrivateLinkB
+      tags:
+        Name: RTPrivateLink-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output networkhub/ec2/vpc.yaml::mainvpc
+
+stack_tags:
+  Name: networkhub-route
