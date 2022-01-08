@@ -52,30 +52,31 @@ launch() {
                     "${ARG_ARRAY[@]}" \
                     delete -y ${CFN_CONFIG}
             fi
-
-            ACTION=create
+            ACTION="create -y"
 
         elif [ "z${STACK_STATUS}" == "zCREATE_COMPLETE" -o "z${STACK_STATUS}" == "zUPDATE_COMPLETE" -o "z${STACK_STATUS}" == "zUPDATE_ROLLBACK_COMPLETE" ]; then
-          ACTION=update
+          ACTION="update -y"
         else
-          ACTION=create
+          ACTION="create -y"
         fi
     elif [ "z${SCRIPT_ACTION}" == "zdestroy" ]; then
-        ACTION=delete
+        ACTION="delete -y"
+    elif [ "z${SCRIPT_ACTION}" == "zgenerate" ]; then
+        ACTION="generate"
     else
       echo "Invalid action. You need to define action as"
       echo "$0 -n <action>"
-      echo "Where valid actions are choice of deploy, destroy"
+      echo "Where valid actions are choice of deploy, destroy, generate"
     fi
 
     if [ "z${DRY_RUN}" == "z" -o "z${DRY_RUN}" == "zfalse" ]; then
         echo "[Calling:]"
         echo "sceptre \
           "${ARG_ARRAY[@]}" \
-          ${ACTION} -y ${CFN_CONFIG}"
+          ${ACTION} ${CFN_CONFIG}"
         sceptre \
           "${ARG_ARRAY[@]}" \
-          ${ACTION} -y ${CFN_CONFIG}
+          ${ACTION} ${CFN_CONFIG}
     fi
     local EXIT_STATUS="$?"
     cd "${BASE_DIR}"
