@@ -1,0 +1,14 @@
+---
+template_path: iam/instance_profile.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  instance_profiles:
+    - name: NATInstanceRole
+      role_name: !stack_output demoaccount/iam/role.yaml::NATInstanceRole
+    - name: GenericEC2InstanceRole
+      role_name: !stack_output demoaccount/iam/role.yaml::GenericEC2InstanceRole
+
+stack_tags:
+  Name: secptre-demo

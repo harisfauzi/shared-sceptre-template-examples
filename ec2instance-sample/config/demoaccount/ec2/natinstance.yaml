@@ -1,0 +1,40 @@
+---
+template_path: ec2/nat_instance.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  nat_instances:
+    - name: NATA
+      availability_zone: {{ stack_group_config.region }}a
+      image_id: !rcmd helper-scripts/get-latest-amazon-linux2-ami-id.sh
+      instance_profile_name: !stack_output deomaccount/iam/instanceprofile.yaml::NATInstanceRole
+      subnet_id: !stack_output deomaccount/ec2/subnet.yaml::PublicA
+      security_group_ids:
+        - !stack_output deomaccount/ec2/securitygroup.yaml::NATInstanceSG
+      tags:
+        Name: NAT-Instance
+        Project: {{ stack_group_config.project_code }}
+      default_route_tables:
+        - name: PrivateA
+          route_table_id: !stack_output deomaccount/ec2/route.yaml::PrivateA
+        - name: PrivateLinkA
+          route_table_id: !stack_output deomaccount/ec2/route.yaml::PrivateLinkA
+    - name: NATB
+      availability_zone: {{ stack_group_config.region }}b
+      image_id: !rcmd helper-scripts/get-latest-amazon-linux2-ami-id.sh
+      instance_profile_name: !stack_output deomaccount/iam/instanceprofile.yaml::NATInstanceRole
+      subnet_id: !stack_output deomaccount/ec2/subnet.yaml::PublicB
+      security_group_ids:
+        - !stack_output deomaccount/ec2/securitygroup.yaml::NATInstanceSG
+      tags:
+        Name: NAT-Instance
+        Project: {{ stack_group_config.project_code }}
+      default_route_tables:
+        - name: PrivateB
+          route_table_id: !stack_output deomaccount/ec2/route.yaml::PrivateB
+        - name: PrivateLinkB
+          route_table_id: !stack_output deomaccount/ec2/route.yaml::PrivateLinkB
+
+stack_tags:
+  Name: deomaccount-natinstance

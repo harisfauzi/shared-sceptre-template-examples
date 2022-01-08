@@ -4,3 +4,5 @@ sceptre/values/*
 !sceptre/values/DO_NOT_DELETE
 network-sample/templates/*
 !network-sample/templates/DO_NOT_DELETE
+ec2instance-sample/templates/*
+!ec2instance-sample/templates/DO_NOT_DELETE
