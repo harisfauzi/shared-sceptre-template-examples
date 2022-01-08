@@ -1,0 +1,57 @@
+---
+template_path: ec2/instance.yaml.j2
+
+hooks:
+  before_generate:
+    - !cmd |
+        #!/bin/bash
+        KEY_PAIR=$(aws ec2 describe-key-pairs --key-names {{ stack_group_config.project_code }} --query "KeyPairs[0].KeyPairId" --output text 2>/dev/null | wc -l)
+        if [ "z${KEY_PAIR}" = "z0" ]; then
+          aws ec2 create-key-pair --key-name {{ stack_group_config.project_code }} | jq -r '.KeyMaterial'
+          echo "Save the above as the private key to connect to the host"
+        fi
+
+  before_create:
+    - !cmd |
+        #!/bin/bash
+        KEY_PAIR=$(aws ec2 describe-key-pairs --key-names {{ stack_group_config.project_code }} --query "KeyPairs[0].KeyPairId" --output text 2>/dev/null | wc -l)
+        if [ "z${KEY_PAIR}" = "z0" ]; then
+          aws ec2 create-key-pair --key-name {{ stack_group_config.project_code }} | jq -r '.KeyMaterial'
+          echo "Save the above as the private key to connect to the host"
+        fi
+
+  before_update:
+    - !cmd |
+        #!/bin/bash
+        KEY_PAIR=$(aws ec2 describe-key-pairs --key-names {{ stack_group_config.project_code }} --query "KeyPairs[0].KeyPairId" --output text 2>/dev/null | wc -l)
+        if [ "z${KEY_PAIR}" = "z0" ]; then
+          aws ec2 create-key-pair --key-name {{ stack_group_config.project_code }} | jq -r '.KeyMaterial'
+          echo "Save the above as the private key to connect to the host"
+        fi
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  source_repo_branch: !environment_variable SOURCE_REPO_BRANCH
+  instances:
+    - name: Test01
+      availability_zone: {{ stack_group_config.region }}a
+      key_name: {{ stack_group_config.project_code }}
+      image_id: !rcmd helper-scripts/get-ami-id.sh
+      iam_instance_profile: !stack_output demoaccount/iam/instanceprofile.yaml::GenericEC2InstanceRole
+      instance_type: t3a.micro
+      network_interfaces:
+        - associate_public_ip_address: True
+          delete_on_termination: True
+          description: Primary network interface
+          device_index: 0
+          ipv6_address_count: 1
+          subnet_id: !stack_output demoaccount/ec2/subnet.yaml::PublicA
+          group_set:
+            - !stack_output demoaccount/ec2/securitygroup.yaml::InstanceBasicSG
+      tags:
+        Name: Test01
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Name: demo-sceptre

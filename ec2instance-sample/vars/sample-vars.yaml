@@ -1,0 +1,17 @@
+vpc_name: sceptre-sample-vpc
+
+subnet_cidr_block:
+  demo:
+    vpc: 10.192.0.0/22
+    public_a: 10.192.2.0/24
+    public_b: 10.192.3.0/24
+    public_summary: 10.192.2.0/23
+    private_a: 10.192.0.0/24
+    private_b: 10.192.1.0/24
+    private_summary: 10.192.0.0/23
+  office:
+    hq: 172.20.0.0/18
+    branch_01: 172.20.4.0/18
+    branch_02: 172.20.8.0/18
+
+network_range: 10.192.0.0/20

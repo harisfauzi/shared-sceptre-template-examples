@@ -1,0 +1,66 @@
+---
+template_path: ec2/subnet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  subnets:
+    - name: PublicA
+      cidr_block: {{ var.subnet_cidr_block.demo.public_a }}
+      ipv6_cidr_block:
+        cidr: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 0
+      availability_zone: {{ stack_group_config.region }}a
+      tags:
+        Name: Public-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output demoaccount/ec2/vpc.yaml::demovpc
+      network_acl_id: !stack_output demoaccount/ec2/networkacl.yaml::publicnacl
+      route_table_id: !stack_output demoaccount/ec2/route.yaml::Public
+    - name: PublicB
+      cidr_block: {{ var.subnet_cidr_block.demo.public_b }}
+      ipv6_cidr_block:
+        cidr: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 1
+      availability_zone: {{ stack_group_config.region }}b
+      tags:
+        Name: Public-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output demoaccount/ec2/vpc.yaml::demovpc
+      network_acl_id: !stack_output demoaccount/ec2/networkacl.yaml::publicnacl
+      route_table_id: !stack_output demoaccount/ec2/route.yaml::Public
+    - name: PrivateA
+      cidr_block: {{ var.subnet_cidr_block.demo.private_a }}
+      ipv6_cidr_block:
+        cidr: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 2
+      availability_zone: {{ stack_group_config.region }}a
+      tags:
+        Name: Private-A
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output demoaccount/ec2/vpc.yaml::demovpc
+      network_acl_id: !stack_output demoaccount/ec2/networkacl.yaml::privatenacl
+      route_table_id: !stack_output demoaccount/ec2/route.yaml::PrivateA
+    - name: PrivateB
+      cidr_block: {{ var.subnet_cidr_block.demo.private_b }}
+      ipv6_cidr_block:
+        cidr: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlockIPv6
+        subnet_size: 64
+        array_size: 256
+        index: 3
+      availability_zone: {{ stack_group_config.region }}b
+      tags:
+        Name: Private-B
+        Project: {{ stack_group_config.project_code }}
+      vpc_id: !stack_output demoaccount/ec2/vpc.yaml::demovpc
+      network_acl_id: !stack_output demoaccount/ec2/networkacl.yaml::privatenacl
+      route_table_id: !stack_output demoaccount/ec2/route.yaml::PrivateB
+
+stack_tags:
+  Name: sceptre-demo

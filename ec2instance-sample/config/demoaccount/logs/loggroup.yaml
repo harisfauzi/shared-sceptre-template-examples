@@ -1,0 +1,17 @@
+---
+template_path: logs/log_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  source_repo_branch: !environment_variable SOURCE_REPO_BRANCH
+  log_groups:
+    - name: VarLogMessages
+      log_group_name: /var/log/messages
+      retention_in_days: 1
+    - name: VarLogSecure
+      log_group_name: /var/log/secure
+      retention_in_days: 1
+
+stack_tags:
+  Name: sceptre-demo

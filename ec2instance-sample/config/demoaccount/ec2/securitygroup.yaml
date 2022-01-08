@@ -1,0 +1,67 @@
+---
+template_path: ec2/security_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  security_groups:
+    - name: NATInstanceSG
+      group_description: NAT Instance
+      vpc_id: !stack_output demoaccount/ec2/vpc.yaml::demovpc
+      tags:
+        Name: NATInstance-SG
+        Project: {{ stack_group_config.project_code }}
+      security_group_egress:
+        - ip_protocol: -1
+          description: Allow all outgoing access to Internet IPv4
+          cidr_ip: 0.0.0.0/0
+        - ip_protocol: -1
+          description: Allow all outgoing access to Internet IPv6
+          cidr_ipv6: "::/0"
+      security_group_ingress:
+        - ip_protocol: -1
+          description: Allow all incoming from Office private subnets
+          cidr_ip: {{ var.subnet_cidr_block.office.hq }}
+        - ip_protocol: -1
+          description: Allow all incoming from the environment range
+          cidr_ip: {{ var.network_range }}
+    - name: InstanceBasicSG
+      group_description: Test Instance Security Group
+      vpc_id: !stack_output demoaccount/ec2/vpc.yaml::demovpc
+      tags:
+        Name: InstanceBasic-SG
+        Project: {{ stack_group_config.project_code }}
+      security_group_egress:
+        - ip_protocol: -1
+          description: Allow all auto discovery access to auto configure IP range (169.254.169.0/24)
+          cidr_ip: 169.254.169.0/24
+        - ip_protocol: 17
+          description: Allow DNS outgoing access to VPC IPv4 on UDP:53
+          cidr_ip: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlock
+          from_port: 53
+          to_port: 53
+        - ip_protocol: 6
+          description: Allow DNS outgoing access to VPC IPv4 on TCP:53
+          cidr_ip: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlock
+          from_port: 53
+          to_port: 53
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to Internet IPv4 on HTTP (TCP:80)
+          cidr_ip: 0.0.0.0/0
+          from_port: 80
+          to_port: 80
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to Internet IPv4 on HTTPS (TCP:443)
+          cidr_ip: 0.0.0.0/0
+          from_port: 443
+          to_port: 443
+      security_group_ingress:
+        - ip_protocol: -1
+          description: Allow all incoming from Your home/work private subnets
+          cidr_ip: {{ var.subnet_cidr_block.office.hq }}
+        - ip_protocol: -1
+          description: Allow all incoming from AWS cloud range
+          cidr_ip: {{ var.network_range }}
+
+stack_tags:
+  Name: secptre-demo

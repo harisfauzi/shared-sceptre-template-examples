@@ -1,0 +1,16 @@
+---
+template_path: ec2/vpc.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  vpcs:
+    - name: demovpc
+      cidr_block: {{ var.subnet_cidr_block.demo.vpc }}
+      use_ipv6: true
+      tags:
+        Name: demovpc
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Name: sceptre-demo
