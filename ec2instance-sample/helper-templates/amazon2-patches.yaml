@@ -1,4 +1,18 @@
 ---
 patches:
-  -
-    id: 'awscli'
+  - id: 'awscli'
+  - id: 'amazon-linux-extras'
+  - id: 'bash'
+  - id: 'bzip2'
+  - id: 'chrony'
+  - id: 'cloud-init'
+  - id: 'coreutils'
+  - id: 'cpio'
+  - id: 'cronie*'
+  - id: 'curl'
+  - id: 'diffutils'
+  - id: 'git*'
+  - id: 'glibc*'
+  - id: 'grub2*'
+  - id: 'iproute'
+  - id: 'iptables'
