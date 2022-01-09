@@ -14,6 +14,9 @@ sceptre_user_data:
         - name: DefaultIPv4
           destination_cidr_block: 0.0.0.0/0
           gateway_id: !stack_output demoaccount/ec2/internetgateway.yaml::demovpc
+        - name: DefaultIPv6
+          destination_ipv6_cidr_block: '::/0'
+          gateway_id: !stack_output demoaccount/ec2/internetgateway.yaml::demovpc
     - name: PrivateA
       tags:
         Name: RTPrivate-A
