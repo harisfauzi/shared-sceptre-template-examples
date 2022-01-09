@@ -1,0 +1,38 @@
+---
+template_path: ssm/patch_baseline.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  source_repo_branch: !environment_variable SOURCE_REPO_BRANCH
+  patch_baselines:
+    - name: BaselineAZLINUX2
+      patch_baseline_name: Baseline-AZLinux2-demo
+      operating_system: AMAZON_LINUX_2
+      description: Custom Patch Baseline for Amazon Linux 2
+      approved_patches_enable_non_security: true
+      approval_rules:
+        patch_rules:
+          - compliance_level: CRITICAL
+            approve_after_days: 7
+            enable_non_security: false
+            patch_filter_group:
+              patch_filters:
+                - key: SEVERITY
+                  _values:
+                    - Critical
+                    - Important
+                    - Medium
+                    - Low
+                - key: CLASSIFICATION
+                  _values:
+                    - Security
+                    - Bugfix
+                    - Enhancement
+                    - Recommended
+                    - Newpackage
+      patch_groups:
+        - patch-demo
+
+stack_tags:
+  Name: sceptre-demo
