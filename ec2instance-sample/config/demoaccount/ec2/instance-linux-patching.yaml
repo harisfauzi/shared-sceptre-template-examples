@@ -1,0 +1,273 @@
+---
+template_path: ec2/instance.yaml.j2
+
+dependencies:
+  - demoaccount/logs/loggroup.yaml
+
+hooks:
+  before_generate:
+    - !cmd |
+        #!/bin/bash
+        KEY_PAIR=$(aws ec2 describe-key-pairs --key-names {{ stack_group_config.project_code }} --query "KeyPairs[0].KeyPairId" --output text 2>/dev/null | wc -l)
+        if [ "z${KEY_PAIR}" = "z0" ]; then
+          aws ec2 create-key-pair --key-name {{ stack_group_config.project_code }} | jq -r '.KeyMaterial'
+          echo "Save the above as the private key to connect to the host"
+        fi
+
+  before_create:
+    - !cmd |
+        #!/bin/bash
+        KEY_PAIR=$(aws ec2 describe-key-pairs --key-names {{ stack_group_config.project_code }} --query "KeyPairs[0].KeyPairId" --output text 2>/dev/null | wc -l)
+        if [ "z${KEY_PAIR}" = "z0" ]; then
+          aws ec2 create-key-pair --key-name {{ stack_group_config.project_code }} | jq -r '.KeyMaterial'
+          echo "Save the above as the private key to connect to the host"
+        fi
+
+  before_update:
+    - !cmd |
+        #!/bin/bash
+        KEY_PAIR=$(aws ec2 describe-key-pairs --key-names {{ stack_group_config.project_code }} --query "KeyPairs[0].KeyPairId" --output text 2>/dev/null | wc -l)
+        if [ "z${KEY_PAIR}" = "z0" ]; then
+          aws ec2 create-key-pair --key-name {{ stack_group_config.project_code }} | jq -r '.KeyMaterial'
+          echo "Save the above as the private key to connect to the host"
+        fi
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  source_repo_branch: !environment_variable SOURCE_REPO_BRANCH
+  instances:
+    - name: Test03
+      creation_policy:
+        resource_signal:
+          count: 1
+          timeout: PT5M
+      availability_zone: {{ stack_group_config.region }}a
+      key_name: {{ stack_group_config.project_code }}
+      image_id: !rcmd "helper-scripts/get-ami-id.sh -p 'amzn2-ami-hvm-2.0.2019????.?-x86_64-ebs'"
+      iam_instance_profile: !stack_output demoaccount/iam/instanceprofile.yaml::GenericEC2InstanceRole
+      instance_type: t3a.micro
+      network_interfaces:
+        - associate_public_ip_address: True
+          delete_on_termination: True
+          description: Primary network interface
+          device_index: 0
+          ipv6_address_count: 1
+          subnet_id: !stack_output demoaccount/ec2/subnet.yaml::PublicA
+          group_set:
+            - !stack_output demoaccount/ec2/securitygroup.yaml::InstanceBasicSG
+      tags:
+        Name: Test03
+        Project: {{ stack_group_config.project_code }}
+      metadata: |
+        AWS::CloudFormation::Init:
+          configSets:
+            default:
+              - cfn_hup
+              - cwagent
+              - amazon_linux_extras
+              - lamp
+            update:
+              - amazon_linux_extras
+              - lamp
+          cfn_hup:
+            files:
+              /etc/cfn/cfn-hup.conf:
+                content:
+                  Fn::Sub: |
+                    [main]
+                    stack=${AWS::StackId}
+                    region=${AWS::Region}
+                    umask=022
+                    interval=2
+                mode: "000400"
+                owner: root
+                group: root
+                encoding: plain
+              /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+                content:
+                  "Fn::Sub": |
+                    [cfn-auto-reloader-hook]
+                    triggers=post.update
+                    path=Resources.Test03.Metadata.AWS::CloudFormation::Init
+                    action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource Test03 --configsets update --region ${AWS::Region}
+                    runas=root
+                mode: "000400"
+                owner: root
+                group: root
+                encoding: plain
+            services:
+              cfn-hup:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+          cwagent:
+            files:
+              /opt/aws/amazon-cloudwatch-agent/etc/amazon2-config.json:
+                content: |
+                  {
+                    "agent": {
+                      "metrics_collection_interval": 60,
+                      "run_as_user": "root"
+                    },
+                    "logs": {
+                      "logs_collected": {
+                        "files": {
+                          "collect_list": [
+                            {
+                              "file_path": "/var/log/messages",
+                              "log_group_name": "/var/log/messages",
+                              "log_stream_name": "{instance_id}"
+                            },
+                            {
+                              "file_path": "/var/log/secure",
+                              "log_group_name": "/var/log/secure",
+                              "log_stream_name": "{instance_id}"
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "metrics": {
+                      "append_dimensions": {
+                        "AutoScalingGroupName": "${aws:AutoScalingGroupName}",
+                        "ImageId": "${aws:ImageId}",
+                        "InstanceId": "${aws:InstanceId}",
+                        "InstanceType": "${aws:InstanceType}"
+                      },
+                      "metrics_collected": {
+                        "collectd": {
+                          "metrics_aggregation_interval": 60
+                        },
+                        "cpu": {
+                          "measurement": [
+                            "cpu_usage_idle",
+                            "cpu_usage_iowait",
+                            "cpu_usage_user",
+                            "cpu_usage_system"
+                          ],
+                          "metrics_collection_interval": 60,
+                          "resources": [
+                            "*"
+                          ],
+                          "totalcpu": false
+                        },
+                        "disk": {
+                          "measurement": [
+                            "used_percent",
+                            "inodes_free"
+                          ],
+                          "metrics_collection_interval": 60,
+                          "resources": [
+                            "*"
+                          ],
+                          "ignore_file_system_types": [
+                            "sysfs",
+                            "proc",
+                            "devtmpfs",
+                            "tmpfs",
+                            "squashfs"
+                          ]
+                        },
+                        "diskio": {
+                          "measurement": [
+                            "io_time"
+                          ],
+                          "metrics_collection_interval": 60,
+                          "resources": [
+                            "*"
+                          ]
+                        },
+                        "mem": {
+                          "measurement": [
+                            "mem_used_percent",
+                            "used_percent"
+                          ],
+                          "metrics_collection_interval": 60
+                        },
+                        "swap": {
+                          "measurement": [
+                            "swap_used_percent",
+                            "free",
+                            "used"
+                          ],
+                          "metrics_collection_interval": 60
+                        }
+                      }
+                    }
+                  }
+
+                mode: "000644"
+                owner: "root"
+                group: "root"
+            commands:
+              00-collectdrepo:
+                command: 'yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm'
+                ignoreErrors: "false"
+              01-installpackages:
+                command: 'yum install -y amazon-cloudwatch-agent collectd'
+                ignoreErrors: "false"
+              02-startcwagent:
+                command: >
+                  /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+                  -a fetch-config
+                  -m ec2
+                  -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon2-config.json
+                ignoreErrors: "false"
+            services:
+              sysvinit:
+                amazon-cloudwatch-agent:
+                  enabled: "true"
+                  ensureRunning: "true"
+                  files:
+                    - /opt/aws/amazon-cloudwatch-agent/etc/amazon2-config.json
+          amazon_linux_extras:
+            commands:
+              01-php:
+                command: 'amazon-linux-extras enable php7.2 mariadb10.5; yum clean metadata'
+                ignoreErrors: "false"
+          lamp:
+            packages:
+              yum:
+                httpd:
+                  - 2.4.33-2.amzn2.0.2
+                php-fpm:
+                  - 7.2.26-1.amzn2
+                mariadb:
+                  - 10.5.10-2.amzn2.0.1
+                git:
+                  - 2.17.2-2.amzn2
+            services:
+              sysvinit:
+                mariadb:
+                  enabled: "true"
+                  ensureRunning: "true"
+                php-fpm:
+                  enabled: "true"
+                  ensureRunning: "true"
+                httpd:
+                  enabled: "true"
+                  ensureRunning: "true"
+      user_data: |
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash -x
+            # Initialize the system using instructions from metadata
+            /opt/aws/bin/cfn-init \
+              --stack ${AWS::StackName} \
+              --resource Test03 \
+              --region ${AWS::Region} \
+              --configsets default \
+              --verbose
+            # Signal the status from cfn-init
+            /opt/aws/bin/cfn-signal -e $? \
+              --stack ${AWS::StackName} \
+              --resource Test03 \
+              --region ${AWS::Region}
+            # Start up the cfn-hup daemon to listen for changes to the Web Server metadata
+            /opt/aws/bin/cfn-hup
+
+stack_tags:
+  Name: demo-sceptre
