@@ -16,3 +16,4 @@ patches:
   - id: 'grub2*'
   - id: 'iproute'
   - id: 'iptables'
+  - id: 'jq'
