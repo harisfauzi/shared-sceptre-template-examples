@@ -40,6 +40,11 @@ sceptre_user_data:
           cidr_ip: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlock
           from_port: 53
           to_port: 53
+        - ip_protocol: 17
+          description: Allow NTP outgoing access to Internet IPv4 on UDP:123
+          cidr_ip: 0.0.0.0/0
+          from_port: 123
+          to_port: 123
         - ip_protocol: 6
           description: Allow DNS outgoing access to VPC IPv4 on TCP:53
           cidr_ip: !stack_output demoaccount/ec2/vpc.yaml::demovpcCidrBlock
@@ -65,6 +70,11 @@ sceptre_user_data:
           cidr_ipv6: '::/0'
           from_port: 443
           to_port: 443
+        - ip_protocol: 17
+          description: Allow NTP outgoing access to Internet IPv6 on UDP:123
+          cidr_ipv6: '::/0'
+          from_port: 123
+          to_port: 123
       security_group_ingress:
         - ip_protocol: -1
           description: Allow all incoming from Your home/work private subnets
