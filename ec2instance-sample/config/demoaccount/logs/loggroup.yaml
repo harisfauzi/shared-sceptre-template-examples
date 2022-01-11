@@ -12,6 +12,15 @@ sceptre_user_data:
     - name: VarLogSecure
       log_group_name: /var/log/secure
       retention_in_days: 1
+    - name: VarLogSyslog
+      log_group_name: /var/log/syslog
+      retention_in_days: 1
+    - name: awsssmrunShellScript
+      log_group_name: /aws/ssm/AWS-RunShellScript
+      retention_in_days: 1
+    - name: awsssmRunPatchBaseline
+      log_group_name: /aws/ssm/AWS-RunPatchBaseline
+      retention_in_days: 1
 
 stack_tags:
   Name: sceptre-demo
