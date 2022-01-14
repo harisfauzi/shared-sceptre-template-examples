@@ -8,6 +8,7 @@ LONG_AWS_PROFILE=""
 CFN_CONFIG=""
 SCEPTRE_PROJECT=""
 DRY_RUN=""
+SKIP_UPDATE_VENV=0
 
 get_short_term_credentials() {
     unset AWS_ACCESS_KEY AWS_SECRET_KEY AWS_SECURITY_TOKEN AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN
@@ -115,6 +116,10 @@ parse_arguments() {
           CFN_CONFIG=$2
           shift 2
           ;;
+        -v|--skip-update-venv)
+          SKIP_UPDATE_VENV=$2
+          shift 2
+          ;;
         -d|--dry-run)
           DRY_RUN=$2
           shift 2
@@ -148,10 +153,12 @@ get_template() {
 start_python_env() {
     virtualenv .venv -p /usr/bin/python3
     source .venv/bin/activate
-    pip install jinja2-cli
-    pip install yml2json
-    pip install sceptre==2.6.2
-    pip install awscli
+    if [ "z${SKIP_UPDATE_VENV}" == "z0" ]; then
+      pip install jinja2-cli
+      pip install yml2json
+      pip install sceptre==2.6.2
+      pip install awscli
+    fi
 }
 
 end_python_env() {
